@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"  # Harbor requires >= 3.12
           cache: pip
       - run: pip install -e '.[dev]'
       # Spec/metrics/command logic is Harbor-free; the agent tests exercise the

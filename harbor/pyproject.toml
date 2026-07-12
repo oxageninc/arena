@@ -7,7 +7,8 @@ name = "arena-harbor"
 version = "0.1.0"
 description = "Harbor adapter to benchmark your coding agent against Claude Code, Gemini, Codex and others under the official verifier"
 readme = "README.md"
-requires-python = ">=3.10"
+# Harbor itself requires Python >= 3.12, so this adapter does too.
+requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [{ name = "Oxagen", email = "dev@oxagen.ai" }]
 keywords = ["benchmark", "harbor", "swe-bench", "ai-agents", "coding-agents"]
@@ -16,13 +17,12 @@ classifiers = [
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
+# Pinned to the 0.6.x line the adapter is built and tested against.
 dependencies = [
-  "harbor>=0.6.0",
-  "tomli>=2.0; python_version < '3.11'",
+  "harbor>=0.6,<0.7",
 ]
 
 [project.optional-dependencies]
