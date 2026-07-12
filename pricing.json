@@ -1,0 +1,32 @@
+{
+  "anthropic/claude-sonnet-5": {
+    "inputPerM": 3,
+    "outputPerM": 15,
+    "cacheReadPerM": 0.3,
+    "cacheWritePerM": 3.75
+  },
+  "anthropic/claude-opus-4.8": {
+    "inputPerM": 15,
+    "outputPerM": 75,
+    "cacheReadPerM": 1.5,
+    "cacheWritePerM": 18.75
+  },
+  "anthropic/claude-haiku-4.5": {
+    "inputPerM": 0.8,
+    "outputPerM": 4,
+    "cacheReadPerM": 0.08,
+    "cacheWritePerM": 1
+  },
+  "zai/glm-5.2": {
+    "inputPerM": 0.6,
+    "outputPerM": 2.2,
+    "cacheReadPerM": 0.11,
+    "note": "Verify against current z.ai coding-plan rate card before publishing."
+  },
+  "google/gemini-2.5-pro": {
+    "inputPerM": 1.25,
+    "outputPerM": 10,
+    "cacheReadPerM": 0.31,
+    "note": "Verify against current Google AI pricing before publishing."
+  }
+}

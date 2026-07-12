@@ -1,0 +1,35 @@
+{
+  "name": "agent-arena",
+  "version": "0.1.0",
+  "description": "Head-to-head benchmark harness for agentic coding CLIs (Claude Code, Gemini CLI, Oxagen, Stella, and yours) with held-out verification, matched configs, paired statistics, and full receipts.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/macanderson/agent-arena.git"
+  },
+  "keywords": [
+    "benchmark",
+    "ai-agents",
+    "coding-agents",
+    "claude-code",
+    "gemini-cli",
+    "evaluation",
+    "llm"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "arena": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "verify:tasks": "tsx src/cli.ts verify"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.8.3",
+    "vitest": "^2.1.9"
+  }
+}

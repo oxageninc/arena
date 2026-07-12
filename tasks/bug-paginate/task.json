@@ -1,0 +1,8 @@
+{
+  "id": "bug-paginate",
+  "name": "Fix pagination page count and range guards",
+  "category": "bug-fix",
+  "difficulty": "easy",
+  "prompt": "`src/paginate.mjs` exports `pageCount(totalItems, pageSize)` and `paginate(items, page, pageSize)`. Two defects must be fixed:\n\n1. `pageCount` drops the final partial page: `pageCount(10, 3)` currently returns 3 but must return 4. The contract: `pageCount` returns the number of pages needed to hold `totalItems` items (`Math.ceil`), returns 0 when `totalItems` is 0, and throws a `RangeError` when `pageSize` is not a positive integer.\n2. `paginate` has no range guards. The contract: pages are 1-based; `paginate` returns the items for that page; it returns an empty array when `page < 1` or `page > pageCount(items.length, pageSize)`; it throws a `RangeError` when `pageSize` is not a positive integer.\n\nKeep both exported function names and signatures unchanged.",
+  "tags": ["javascript"]
+}

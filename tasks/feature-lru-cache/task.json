@@ -1,0 +1,8 @@
+{
+  "id": "feature-lru-cache",
+  "name": "Implement an LRU cache",
+  "category": "feature",
+  "difficulty": "medium",
+  "prompt": "Implement `createLruCache` in `src/lru-cache.mjs` (currently a stub that throws). Contract:\n\n`createLruCache(maxSize)` returns an object with `get(key)`, `set(key, value)`, `has(key)`, `size()`, and `keys()`.\n\n- `maxSize` must be a positive integer; otherwise `createLruCache` throws a `TypeError`.\n- `get(key)` returns the stored value, or `undefined` when absent. A hit marks the key as MOST recently used.\n- `set(key, value)` inserts or updates, marking the key most recently used. When inserting a NEW key would exceed `maxSize`, the LEAST recently used key is evicted first.\n- `has(key)` returns a boolean and does NOT affect recency.\n- `size()` returns the current entry count.\n- `keys()` returns an array of keys ordered from least recently used to most recently used.\n- Any value is storable, including `undefined` (`has` distinguishes a stored `undefined` from an absent key).\n\nKeep the exported function name and signature unchanged. Do not add new dependencies.",
+  "tags": ["javascript", "data-structures"]
+}

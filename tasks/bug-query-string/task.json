@@ -1,0 +1,8 @@
+{
+  "id": "bug-query-string",
+  "name": "Fix query-string parsing (decoding, repeated keys)",
+  "category": "bug-fix",
+  "difficulty": "medium",
+  "prompt": "`parseQueryString` in `src/query-string.mjs` parses a URL query string into an object, but it neither percent-decodes nor handles repeated keys.\n\nFix it to meet this contract exactly:\n- A leading `?` is ignored: `parseQueryString('?a=1')` → `{ a: '1' }`.\n- Keys and values are percent-decoded, and `+` decodes to a space: `'q=hello+w%C3%B6rld'` → `{ q: 'hello wörld' }`. Decoding applies to keys too.\n- A key that appears once maps to its string value. A key that appears multiple times maps to an ARRAY of its values in order of appearance: `'a=1&a=2&b=3'` → `{ a: ['1', '2'], b: '3' }`.\n- A key with no `=` maps to the empty string: `'flag&a=1'` → `{ flag: '', a: '1' }`. A key with a trailing `=` also maps to the empty string.\n- Values may contain `=`: `'a=b=c'` → `{ a: 'b=c' }` (split on the FIRST `=` only).\n- Empty segments are skipped: `'a=1&&b=2'` → `{ a: '1', b: '2' }`. The empty string and `'?'` both return `{}`.\n\nKeep the exported function name and signature unchanged.",
+  "tags": ["javascript", "parsing"]
+}

@@ -1,0 +1,8 @@
+{
+  "id": "robustness-fetch-users",
+  "name": "Add error handling to an unguarded API call",
+  "category": "robustness",
+  "difficulty": "medium",
+  "prompt": "`getUser` in `src/users.mjs` fetches a user from an API with NO error handling: a non-2xx response or a network/parse failure escapes as an unhandled rejection. Add proper error handling with this exact contract (`fetchImpl` stays an injectable parameter defaulting to global `fetch`):\n\n- Success (response.ok true, body parses as JSON): resolve to `{ ok: true, status: <response.status>, data: <parsed body> }`.\n- HTTP error (response.ok false): resolve to `{ ok: false, status: <response.status>, error: <non-empty string> }`. The body must NOT be parsed in this case.\n- Thrown failure (fetch rejects, or the body fails to parse as JSON): resolve to `{ ok: false, status: 0, error: <non-empty string> }`.\n- The function must never reject and never throw synchronously.\n\nKeep the exported function name and signature (`getUser(id, fetchImpl = fetch)`) unchanged. Do not add new dependencies.",
+  "tags": ["javascript", "error-handling"]
+}
