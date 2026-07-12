@@ -118,8 +118,9 @@ export function runVerification(
   const timeoutMs = (task.verifyTimeoutSeconds ?? 60) * 1000;
   // node --test needs a glob, not a bare directory (a directory arg is
   // treated as a module entry point and fails with MODULE_NOT_FOUND).
-  const env = { ...process.env, NO_COLOR: "1" };
-  delete env.FORCE_COLOR;
+  // FORCE_COLOR (injected by pnpm) overrides NO_COLOR, so drop it.
+  const { FORCE_COLOR: _forceColor, ...baseEnv } = process.env;
+  const env = { ...baseEnv, NO_COLOR: "1" };
   try {
     const output = execFileSync(
       process.execPath,
