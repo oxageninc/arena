@@ -9,17 +9,30 @@
  *   arena verify [taskId…]              — prove tasks discriminate: held-out
  *                                         tests FAIL on the pristine workspace
  *                                         and PASS on the reference solution
+ *   arena baseline save <runDir>        — snapshot a run as the drift baseline
+ *   arena baseline show                 — print the current baseline
+ *   arena gate <runDir>                 — fail (exit 1) if a run regressed vs
+ *                                         the baseline (the CI drift gate)
  */
 
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
 import { adapterNames, createAdapter } from "./adapters/index.js";
+import {
+  buildBaseline,
+  evaluateGate,
+  formatGateReport,
+  loadBaseline,
+  loadGateConfig,
+  saveBaseline,
+  type GateThresholds,
+} from "./baseline.js";
 import { executeRun } from "./orchestrator.js";
-import { generateReport } from "./report.js";
+import { generateReport, loadRun } from "./report.js";
 import {
   applySolution,
   loadTasks,
@@ -49,6 +62,12 @@ switch (command) {
   case "verify":
     cmdVerify(rest);
     break;
+  case "baseline":
+    cmdBaseline(rest);
+    break;
+  case "gate":
+    cmdGate(rest);
+    break;
   default:
     console.log(
       [
@@ -60,6 +79,9 @@ switch (command) {
         "  run --agents <a,b> [...]     Run a benchmark (see below)",
         "  report <runDir>              Regenerate report.md for a run",
         "  verify [taskId...]           Audit tasks: pristine must fail, solution must pass",
+        "  baseline save <runDir>       Snapshot a run's metrics as the drift baseline",
+        "  baseline show                Print the current baseline",
+        "  gate <runDir>                Fail (exit 1) if a run regressed vs the baseline",
         "",
         "Run options:",
         "  --agents  Comma list; each entry `adapter` or `adapter=model`",
@@ -72,8 +94,21 @@ switch (command) {
         "  --seed    RNG seed for deterministic statistics (default: 42)",
         "  --out     Results root (default: ./results)",
         "",
-        "Example:",
+        "Gate options (fail CI when your agent drifts):",
+        "  --baseline           Baseline file (default: ./arena-baseline.json)",
+        "  --config             Gate thresholds JSON (default: ./arena-gate.json if present)",
+        "  --agent              Only gate this adapter",
+        "  --accuracy-drop      Max allowed resolve-rate drop, points 0-1 (default: 0)",
+        "  --tokens-increase    Max allowed median-token increase % (default: 10)",
+        "  --cost-increase      Max allowed median-cost increase % (default: 15)",
+        "  --speed-increase     Max allowed median wall-clock increase % (default: off)",
+        "  --require-significant  Only fail accuracy when the drop clears 95% CI noise",
+        "  --allow-task-mismatch  Permit a run over a different task set",
+        "",
+        "Examples:",
         "  pnpm arena run --agents oxagen,claude-code --model anthropic/claude-sonnet-5 --trials 3",
+        "  pnpm arena baseline save results/run-… --agent oxagen",
+        "  pnpm arena gate results/run-… --require-significant   # in CI",
       ].join("\n"),
     );
 }
@@ -208,4 +243,98 @@ function cmdVerify(argv: string[]): void {
     process.exit(1);
   }
   console.log(`\nAll ${String(tasks.length)} task(s) discriminate correctly.`);
+}
+
+const DEFAULT_BASELINE_PATH = "arena-baseline.json";
+
+function cmdBaseline(argv: string[]): void {
+  const [sub, ...subArgs] = argv;
+  if (sub === "save") {
+    const { values, positionals } = parseArgs({
+      args: subArgs,
+      allowPositionals: true,
+      options: { out: { type: "string" }, agent: { type: "string" } },
+    });
+    const runDir = positionals[0];
+    if (!runDir) {
+      console.error("Usage: arena baseline save <runDir> [--out arena-baseline.json] [--agent <adapter>]");
+      process.exit(1);
+    }
+    const { manifest, results } = loadRun(resolve(runDir));
+    const baseline = buildBaseline(
+      manifest,
+      results,
+      new Date().toISOString(),
+      values.agent,
+    );
+    const outPath = resolve(values.out ?? DEFAULT_BASELINE_PATH);
+    saveBaseline(outPath, baseline);
+    console.log(
+      `Baseline saved to ${outPath}\n` +
+        `  source run: ${baseline.sourceRunId} · tasks: ${String(baseline.taskIds.length)} · trials: ${String(baseline.trials)}\n` +
+        baseline.agents
+          .map(
+            (a) =>
+              `  ${a.key}: ${(a.successRate * 100).toFixed(1)}% resolved` +
+              (a.medianTotalTokens !== null ? ` · ${Math.round(a.medianTotalTokens).toLocaleString()} tok` : "") +
+              (a.medianComputedCost !== null ? ` · $${a.medianComputedCost.toFixed(4)}` : ""),
+          )
+          .join("\n"),
+    );
+    return;
+  }
+  if (sub === "show") {
+    const { values } = parseArgs({ args: subArgs, options: { file: { type: "string" } } });
+    const baseline = loadBaseline(resolve(values.file ?? DEFAULT_BASELINE_PATH));
+    console.log(JSON.stringify(baseline, null, 2));
+    return;
+  }
+  console.error("Usage: arena baseline <save|show> …");
+  process.exit(1);
+}
+
+function cmdGate(argv: string[]): void {
+  const { values, positionals } = parseArgs({
+    args: argv,
+    allowPositionals: true,
+    options: {
+      baseline: { type: "string" },
+      config: { type: "string" },
+      agent: { type: "string" },
+      "accuracy-drop": { type: "string" },
+      "tokens-increase": { type: "string" },
+      "cost-increase": { type: "string" },
+      "speed-increase": { type: "string" },
+      "require-significant": { type: "boolean" },
+      "allow-task-mismatch": { type: "boolean" },
+    },
+  });
+  const runDir = positionals[0];
+  if (!runDir) {
+    console.error("Usage: arena gate <runDir> [--baseline arena-baseline.json] [--config arena-gate.json] [flags]");
+    process.exit(1);
+  }
+
+  const baseline = loadBaseline(resolve(values.baseline ?? DEFAULT_BASELINE_PATH));
+
+  // Config file (or built-in defaults), then CLI flag overrides on top.
+  const configPath = values.config ?? (existsSync(resolve("arena-gate.json")) ? "arena-gate.json" : undefined);
+  const thresholds: GateThresholds = loadGateConfig(configPath ? resolve(configPath) : undefined);
+  // A finite number, or null (a non-numeric flag value disables the check).
+  const num = (v: string | undefined): number | null => {
+    if (v === undefined) return null;
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? n : null;
+  };
+  if (values["accuracy-drop"] !== undefined) thresholds.accuracyMaxDropPoints = num(values["accuracy-drop"]) ?? 0;
+  if (values["tokens-increase"] !== undefined) thresholds.tokensMaxIncreasePct = num(values["tokens-increase"]);
+  if (values["cost-increase"] !== undefined) thresholds.costMaxIncreasePct = num(values["cost-increase"]);
+  if (values["speed-increase"] !== undefined) thresholds.speedMaxIncreasePct = num(values["speed-increase"]);
+  if (values["require-significant"]) thresholds.accuracyRequireSignificant = true;
+  if (values["allow-task-mismatch"]) thresholds.allowTaskMismatch = true;
+
+  const { manifest, results } = loadRun(resolve(runDir));
+  const result = evaluateGate(baseline, manifest, results, thresholds, values.agent);
+  console.log(formatGateReport(result, baseline));
+  process.exit(result.passed ? 0 : 1);
 }

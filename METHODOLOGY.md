@@ -53,3 +53,12 @@ One run executes N agents × T tasks × K trials. Every trial:
 For headline resolve-rate claims, run this same protocol over [SWE-bench Verified](https://github.com/SWE-bench/SWE-bench) with a containerized runner and the **official** evaluator, with a pre-registered instance list (published random seed over the 500 verified instances, n ≥ 100). Arena's local suite is for harness development, smoke comparisons, and metric plumbing — the statistics and receipt discipline are identical either way.
 
 The [`harbor/`](harbor/) adapter is how you do this: it plugs any agent into [Harbor](https://www.harborframework.com/), whose Docker verifier runs each task's own FAIL_TO_PASS / PASS_TO_PASS suite — the agent never sees the grader. Because Harbor already bundles the industry-leading agents (Claude Code, Gemini, Codex, Cursor, Aider, …), a matched-model run of your agent against those built-ins is a fair, official-scored, receipted comparison — exactly the bar this document sets, at research scale. The adapter's token/cost numbers are annotations; the resolve-rate from Harbor's verifier is the score.
+
+## Tracking drift over time
+
+A comparison is a snapshot; a **baseline** turns it into a tripwire. `arena baseline save` records a run's per-agent resolve rate (with its Wilson interval), median tokens, cost, and wall clock; `arena gate` re-measures a later run and exits non-zero when it regresses past your thresholds. Two rules keep the gate honest, consistent with everything above:
+
+- **Compare like with like.** The gate refuses to run when the new task set differs from the baseline's — a resolve-rate diff across different problems is meaningless — unless you explicitly opt in.
+- **Don't cry wolf on noise.** With `--require-significant`, an accuracy drop only fails once it clears the 95% CIs (baseline's lower bound above the new run's upper bound). Point-estimate mode is available for a strict "no drop at all" gate, but with small `n` that flakes; raise `--trials` or require significance.
+
+The baseline is a committed JSON artifact, so a regression shows up as a red check on the PR that caused it — the same day, not months later when someone re-benchmarks.

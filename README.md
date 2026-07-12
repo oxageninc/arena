@@ -94,6 +94,29 @@ Ships with `ByoAgent` (bring your own) plus `OxagenAgent` / `StellaAgent` specs.
 
 Before you publish a number, read [METHODOLOGY.md](METHODOLOGY.md). Short version: same model on every agent, pre-committed task set and trial count, p < 0.05 on the metric you're claiming, raw run directory published, and a conflict-of-interest note if you built one of the agents.
 
+## Track drift: the regression gate
+
+Benchmarks aren't only for bragging — they keep your own agent from silently getting worse. Snapshot a run as a **baseline**, then fail CI when a later run regresses past your thresholds:
+
+```bash
+# 1. Establish the baseline from a good run and commit it.
+pnpm arena run --agents mine --model anthropic/claude-sonnet-5 --trials 5 -o results
+pnpm arena baseline save results/run-… --agent mine        # writes arena-baseline.json
+git add arena-baseline.json && git commit -m "arena: baseline"
+
+# 2. In CI, re-run and gate. Non-zero exit = regression.
+pnpm arena run --agents mine --model anthropic/claude-sonnet-5 --trials 5 -o results
+pnpm arena gate results/run-… --require-significant
+```
+
+The gate compares the new run to the baseline per agent and fails on:
+
+- **accuracy** — resolve rate dropped past `--accuracy-drop` (default: any drop). With `--require-significant` a drop only fails once it clears 95% CI noise, so small-`n` jitter doesn't red-flag CI.
+- **tokens / cost** — median rose past `--tokens-increase` (10%) / `--cost-increase` (15%).
+- **speed** — median wall-clock, reported by default, enforced with `--speed-increase`.
+
+It refuses to compare across different task sets (a meaningless resolve-rate diff) unless you pass `--allow-task-mismatch`. Thresholds can also live in an `arena-gate.json` file. A ready-to-copy workflow is in [`examples/regression-gate.yml`](examples/regression-gate.yml).
+
 ## Development
 
 ```bash

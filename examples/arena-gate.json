@@ -1,0 +1,21 @@
+{
+  "//": "Regression-gate thresholds. Copy to your repo root as arena-gate.json (arena gate reads it by default) or pass --config. CLI flags override these.",
+
+  "//accuracyMaxDropPoints": "Max allowed resolve-rate drop in points 0-1. 0 = any drop fails.",
+  "accuracyMaxDropPoints": 0,
+
+  "//accuracyRequireSignificant": "Only fail accuracy once the drop clears 95% CI noise (baseline lower bound above the new run's upper bound). Avoids flaking CI on small samples.",
+  "accuracyRequireSignificant": true,
+
+  "//tokensMaxIncreasePct": "Fail if median total tokens rose more than this %. null disables.",
+  "tokensMaxIncreasePct": 10,
+
+  "//costMaxIncreasePct": "Fail if median computed cost rose more than this %. null disables.",
+  "costMaxIncreasePct": 15,
+
+  "//speedMaxIncreasePct": "Fail if median wall-clock rose more than this %. null = report only (wall clock is environment-dependent).",
+  "speedMaxIncreasePct": null,
+
+  "//allowTaskMismatch": "Permit gating a run over a different task set than the baseline. Off by default — comparing resolve rates across different tasks is meaningless.",
+  "allowTaskMismatch": false
+}

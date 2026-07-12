@@ -1,0 +1,60 @@
+# Example: fail CI when your agent regresses against a committed baseline.
+#
+# Copy to .github/workflows/ in your repo. Prerequisites:
+#   1. Your agent has an Arena adapter (see src/adapters/ — ~80 lines).
+#   2. You committed a baseline once:
+#        arena run --agents mine --model <model> --trials 5 -o results
+#        arena baseline save results/run-… --agent mine   # -> arena-baseline.json
+#        git add arena-baseline.json && git commit
+#   3. Your provider key is a repo secret (here: MY_PROVIDER_KEY).
+#
+# Every PR then re-runs the benchmark and fails if the resolve rate drops
+# (beyond CI noise) or tokens/cost blow past the thresholds.
+
+name: agent-regression-gate
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Re-run the same suite the baseline was measured on. Keep --trials high
+      # enough that --require-significant has the power to catch real drops.
+      - name: Benchmark the agent
+        env:
+          MY_PROVIDER_KEY: ${{ secrets.MY_PROVIDER_KEY }}
+        run: >
+          pnpm arena run
+          --agents mine
+          --model anthropic/claude-sonnet-5
+          --trials 5
+          --out results
+
+      # Non-zero exit fails the job. --require-significant avoids flaking CI on
+      # small-sample jitter; drop it for a strict "no drop at all" gate.
+      - name: Gate against the committed baseline
+        run: >
+          pnpm arena gate results/run-*
+          --agent mine
+          --require-significant
+          --config arena-gate.json
+
+      # Keep the run's receipts (transcripts, diffs, report) for inspection.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: arena-run
+          path: results/
