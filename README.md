@@ -1,12 +1,12 @@
-# Agent Arena
+# Arena
 
 **Head-to-head benchmarks for agentic coding CLIs — built to survive scrutiny.**
 
-Arena runs two or more coding agents (Claude Code, Gemini CLI, [Oxagen](https://oxagen.sh), [Stella](https://github.com/macanderson/stella), or your own) on the **same tasks, same model, same budget, same timeout**, grades them with **held-out tests the agent can never see or author**, and reports each metric separately with real statistics and full receipts.
+Arena runs two or more coding agents (Claude Code, Gemini CLI, [Oxagen](https://oxagen.sh), [Stella](https://github.com/oxageninc/stella), or your own) on the **same tasks, same model, same budget, same timeout**, grades them with **held-out tests the agent can never see or author**, and reports each metric separately with real statistics and full receipts.
 
 ```bash
-git clone https://github.com/macanderson/agent-arena
-cd agent-arena && pnpm install
+git clone https://github.com/oxageninc/arena
+cd arena && pnpm install
 
 pnpm arena doctor    # which agent CLIs are installed?
 pnpm arena list      # available tasks

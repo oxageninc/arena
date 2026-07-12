@@ -1,12 +1,12 @@
 {
-  "name": "agent-arena",
+  "name": "arena",
   "version": "0.1.0",
   "description": "Head-to-head benchmark harness for agentic coding CLIs (Claude Code, Gemini CLI, Oxagen, Stella, and yours) with held-out verification, matched configs, paired statistics, and full receipts.",
   "license": "MIT",
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/macanderson/agent-arena.git"
+    "url": "https://github.com/oxageninc/arena.git"
   },
   "keywords": [
     "benchmark",

@@ -73,7 +73,7 @@ export async function executeRun(
     runId,
     createdAt: new Date().toISOString(),
     harness: {
-      name: "agent-arena",
+      name: "arena",
       version: HARNESS_VERSION,
       gitSha: gitSha(),
     },

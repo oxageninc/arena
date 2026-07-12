@@ -52,7 +52,7 @@ switch (command) {
   default:
     console.log(
       [
-        "agent-arena — head-to-head benchmarks for agentic coding CLIs",
+        "arena — head-to-head benchmarks for agentic coding CLIs",
         "",
         "Commands:",
         "  list                         List available tasks",
