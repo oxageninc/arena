@@ -22,7 +22,7 @@ classifiers = [
 ]
 # Pinned to the 0.6.x line the adapter is built and tested against.
 dependencies = [
-  "harbor>=0.6,<0.7",
+  "harbor>=0.6,<0.20",
 ]
 
 [project.optional-dependencies]
