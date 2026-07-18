@@ -1,5 +1,9 @@
 # Arena
 
+[![CI](https://github.com/oxageninc/arena/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/oxageninc/arena/actions/workflows/ci.yml)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/oxageninc/arena/badge)](https://scorecard.dev/viewer/?uri=github.com/oxageninc/arena)
+
 **Head-to-head benchmarks for agentic coding CLIs — built to survive scrutiny.**
 
 Arena runs two or more coding agents (Claude Code, Gemini CLI, [Oxagen](https://oxagen.sh), [Stella](https://github.com/oxageninc/stella), or your own) on the **same tasks, same model, same budget, same timeout**, grades them with **held-out tests the agent can never see or author**, and reports each metric separately with real statistics and full receipts.
@@ -125,5 +129,12 @@ pnpm typecheck
 pnpm test            # unit + end-to-end pipeline (mock agents, no API keys)
 pnpm arena verify    # audit every task's discrimination invariants
 ```
+
+Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) (adding an
+adapter or task fixture is a great first PR). We also have a
+[Code of Conduct](.github/CODE_OF_CONDUCT.md) and a
+[changelog](CHANGELOG.md). Report security issues privately via the repo's
+[Security tab](https://github.com/oxageninc/arena/security/advisories/new) — not
+as a public issue.
 
 MIT © Mac Anderson

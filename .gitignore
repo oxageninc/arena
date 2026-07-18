@@ -4,6 +4,9 @@ dist/
 *.tsbuildinfo
 .DS_Store
 
+# Agent working caches (code graph, context DB) — never commit.
+.stella/
+
 # Python (harbor adapter)
 harbor/.venv/
 __pycache__/
