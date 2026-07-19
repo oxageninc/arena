@@ -54,7 +54,7 @@ def test_script_install_requires_script_or_env():
 def test_unknown_install_kind_rejected():
     data = _valid_dict()
     data["install"] = {"kind": "docker"}
-    with pytest.raises(ValueError, match="binary.*script"):
+    with pytest.raises(ValueError, match=r"binary.*script"):
         spec_from_dict(data)
 
 

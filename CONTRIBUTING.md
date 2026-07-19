@@ -8,7 +8,7 @@ each undermine the one thing the project exists to provide.
 
 ## Before you write code
 
-- **Search [open issues](https://github.com/oxageninc/arena/issues) first** —
+- **Search [open issues](https://github.com/macanderson/arena/issues) first** —
   someone may already be on it.
 - For anything non-trivial (new adapter, new task, stat/report change), **open
   an issue** and sketch the approach before investing in code. A 5-minute
@@ -21,7 +21,7 @@ each undermine the one thing the project exists to provide.
 Arena needs **Node 22+** and **pnpm** (the CI pins pnpm 11):
 
 ```bash
-git clone https://github.com/oxageninc/arena
+git clone https://github.com/macanderson/arena
 cd arena
 pnpm install
 pnpm typecheck

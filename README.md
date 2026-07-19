@@ -1,17 +1,22 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/logo-icon-dark.svg">
+  <img src="assets/logo-icon.svg" alt="Arena — two nested stadium shapes" width="76">
+</picture>
+
 # Arena
 
-[![CI](https://github.com/oxageninc/arena/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/oxageninc/arena/actions/workflows/ci.yml)
+[![CI](https://github.com/macanderson/arena/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/macanderson/arena/actions/workflows/ci.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/oxageninc/arena/badge)](https://scorecard.dev/viewer/?uri=github.com/oxageninc/arena)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/macanderson/arena/badge)](https://scorecard.dev/viewer/?uri=github.com/macanderson/arena)
 
-**Head-to-head benchmarks for agentic coding CLIs — built to survive scrutiny.**
+**Head-to-head benchmarks for agentic coding CLIs — built to survive scrutiny.** · [arena.oxagen.sh](https://arena.oxagen.sh)
 
 Website: [arena.oxagen.sh](https://arena.oxagen.sh) · Paper: [The State of Agent Benchmarking](docs/agent-engine-benchmarks-2026.md) · Spec: [Agent Benchmark Protocol (draft)](docs/agent-benchmark-protocol.md)
 
 Arena runs two or more coding agents (Claude Code, Gemini CLI, [Oxagen](https://oxagen.sh), [Stella](https://github.com/oxageninc/stella), or your own) on the **same tasks, same model, same budget, same timeout**, grades them with **held-out tests the agent can never see or author**, and reports each metric separately with real statistics and full receipts.
 
 ```bash
-git clone https://github.com/oxageninc/arena
+git clone https://github.com/macanderson/arena
 cd arena && pnpm install
 
 pnpm arena doctor    # which agent CLIs are installed?
@@ -136,7 +141,7 @@ Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) (adding an
 adapter or task fixture is a great first PR). We also have a
 [Code of Conduct](.github/CODE_OF_CONDUCT.md) and a
 [changelog](CHANGELOG.md). Report security issues privately via the repo's
-[Security tab](https://github.com/oxageninc/arena/security/advisories/new) — not
+[Security tab](https://github.com/macanderson/arena/security/advisories/new) — not
 as a public issue.
 
 MIT © Mac Anderson

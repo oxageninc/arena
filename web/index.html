@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Arena — head-to-head benchmarks for agentic coding CLIs</title>
+  <meta name="description" content="Arena runs coding agents on the same tasks, same model, same budget, same timeout — grades them with held-out tests, and reports each metric separately with real statistics and full receipts.">
+  <meta property="og:title" content="Arena — benchmarks built to survive scrutiny">
+  <meta property="og:description" content="Same model. Same budget. Same timeout. Held-out verification, paired statistics, full receipts.">
+  <meta property="og:url" content="https://arena.oxagen.sh">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="Arena home">
+      <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <rect x="3" y="17" width="58" height="30" rx="15" stroke="currentColor" stroke-width="4"/>
+        <rect x="15" y="26" width="34" height="12" rx="6" stroke="currentColor" stroke-width="4"/>
+        <line x1="32" y1="26" x2="32" y2="38" stroke="currentColor" stroke-width="4"/>
+      </svg>
+      <span class="wordmark">ARENA</span>
+    </a>
+    <nav class="site-nav" aria-label="Site">
+      <a href="#scrutiny">Scrutiny</a>
+      <a href="#report">Report</a>
+      <a href="#method">Method</a>
+      <a href="#agents">Agents</a>
+      <a href="#harbor">Harbor</a>
+      <a class="pill" href="https://github.com/macanderson/arena">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <svg class="hero-mark" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <rect x="3" y="17" width="58" height="30" rx="15" stroke="currentColor" stroke-width="4"/>
+        <rect x="15" y="26" width="34" height="12" rx="6" stroke="currentColor" stroke-width="4"/>
+        <line x1="32" y1="26" x2="32" y2="38" stroke="currentColor" stroke-width="4"/>
+      </svg>
+      <p class="eyebrow">Benchmark harness · Open source · MIT</p>
+      <h1>Head-to-head benchmarks for agentic coding CLIs — built to survive scrutiny.</h1>
+      <p class="lede">
+        Arena runs two or more coding agents — Claude&nbsp;Code, Gemini&nbsp;CLI, Oxagen,
+        Stella, or your own — on the same tasks with the same model, budget, and timeout.
+        Held-out tests the agent can never see or author decide every outcome. Each metric
+        is reported separately, with real statistics and full receipts.
+      </p>
+      <div class="hero-actions">
+        <a class="pill pill--solid" href="https://github.com/macanderson/arena">View on GitHub</a>
+        <a class="pill" href="https://github.com/macanderson/arena/blob/main/METHODOLOGY.md">Read the methodology</a>
+      </div>
+      <div class="terminal" role="figure" aria-label="Quick start commands">
+<pre><span class="cmt"># the only comparison that isolates the harness: same model everywhere</span>
+<span class="prompt">$</span> git clone https://github.com/macanderson/arena &amp;&amp; cd arena &amp;&amp; pnpm install
+<span class="prompt">$</span> pnpm arena run --agents oxagen,claude-code \
+    --model anthropic/claude-sonnet-5 --trials 3 --budget 5
+<span class="prompt">$</span> open results/run-*/report.md</pre>
+      </div>
+    </div>
+  </section>
+
+  <section id="scrutiny">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Every number, attacked first</h2>
+        <p>Most agent-vs-agent numbers don’t survive five minutes of skeptical reading.
+           Arena is engineered around the specific ways benchmarks get torn apart.</p>
+      </div>
+      <dl class="ledger">
+        <div class="ledger-row">
+          <dt>The agent graded itself</dt>
+          <dd>Verification tests live outside the workspace, are copied in only after the
+              agent exits, and anything the agent planted at the verify path is deleted
+              first. CI proves every task’s tests fail on the pristine workspace and pass
+              on the reference solution.</dd>
+        </div>
+        <div class="ledger-row">
+          <dt>Different models, budgets, timeouts</dt>
+          <dd>One config drives every agent. Runs with unmatched models are stamped
+              <code>matchedModels: false</code> and the report leads with a warning banner.</dd>
+        </div>
+        <div class="ledger-row">
+          <dt>Your harness broke the competitor</dt>
+          <dd>A CLI that can’t even be invoked is scored <code>agent-error</code> and
+              excluded from every comparison — it is never counted as the agent losing.</dd>
+        </div>
+        <div class="ledger-row">
+          <dt>Token counts aren’t comparable</dt>
+          <dd>Adapters normalize usage: input never includes cache reads; cache reads and
+              writes are tracked separately. The rule is documented per adapter.</dd>
+        </div>
+        <div class="ledger-row">
+          <dt>n = 1, no stats</dt>
+          <dd>Multiple trials per task–agent pair. Wilson 95% intervals on success rates,
+              exact McNemar on paired outcomes, seeded paired-bootstrap CIs on wall-clock,
+              token, and cost deltas. Same raw data + seed ⇒ the same report, bit for bit.</dd>
+        </div>
+        <div class="ledger-row">
+          <dt>Where’s the raw data?</dt>
+          <dd>Every trial writes its full transcript, workspace diff, and a manifest with
+              CLI versions, models, host, seed, and a one-line reproduce command.</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section id="report">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>What a run reports</h2>
+        <p>One row per agent, one number per metric — never blended into a score.
+           Interval capsules show the 95% Wilson bounds; the tick is the point estimate.</p>
+      </div>
+      <div class="report-card">
+        <div class="report-title">
+          <span>results.json → report.md</span>
+          <span class="chip">illustrative output</span>
+        </div>
+        <div class="report-scroll">
+          <table class="report">
+            <thead>
+              <tr>
+                <th scope="col">Agent</th>
+                <th scope="col">Trials</th>
+                <th scope="col">Success rate (95% CI)</th>
+                <th scope="col">Median wall clock</th>
+                <th scope="col">Median tokens</th>
+                <th scope="col">Computed cost</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="agent-name">agent-a</span></td>
+                <td class="num">18</td>
+                <td>
+                  <div class="ci">
+                    <div class="ci-track" aria-hidden="true">
+                      <span class="ci-band" style="left: 60.8%; width: 33.4%;"></span>
+                      <span class="ci-point" style="left: 83.3%;"></span>
+                    </div>
+                    <span class="ci-label">83.3% <small>(60.8–94.2)</small></span>
+                  </div>
+                </td>
+                <td class="num">74.2s</td>
+                <td class="num">148,210</td>
+                <td class="num">$0.4130</td>
+              </tr>
+              <tr>
+                <td><span class="agent-name">agent-b</span></td>
+                <td class="num">18</td>
+                <td>
+                  <div class="ci">
+                    <div class="ci-track" aria-hidden="true">
+                      <span class="ci-band" style="left: 38.6%; width: 41.1%;"></span>
+                      <span class="ci-point" style="left: 61.1%;"></span>
+                    </div>
+                    <span class="ci-label">61.1% <small>(38.6–79.7)</small></span>
+                  </div>
+                </td>
+                <td class="num">51.9s</td>
+                <td class="num">96,554</td>
+                <td class="num">$0.2871</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="report-foot">
+          Exact McNemar on paired outcomes: <code>p&nbsp;=&nbsp;0.289</code> — not significant
+          at α&nbsp;=&nbsp;0.05. Arena tells you to collect more trials before claiming a
+          success-rate difference.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="method">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Anatomy of a trial</h2>
+        <p>Agents interleave and their order flips every trial (ABBA); tasks run
+           sequentially so agents never contend for the host.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <span class="step-num">01</span>
+          <h3>Seed</h3>
+          <p>The task’s workspace is copied to a fresh temp directory and committed to a
+             fresh git repo. Every agent receives the identical prompt.</p>
+        </div>
+        <div class="step">
+          <span class="step-num">02</span>
+          <h3>Agent</h3>
+          <p>The CLI runs headlessly with the shared model, budget, and timeout. Arguments
+             are argv arrays — nothing passes through a shell.</p>
+        </div>
+        <div class="step">
+          <span class="step-num">03</span>
+          <h3>Diff</h3>
+          <p>A git diff against the seed commit captures exactly what the agent changed —
+             stored as a receipt with the full transcript.</p>
+        </div>
+        <div class="step">
+          <span class="step-num">04</span>
+          <h3>Verify</h3>
+          <p>The harness deletes anything planted at the verify path, copies the held-out
+             tests in, and runs them. They were never on disk while the agent ran.</p>
+        </div>
+        <div class="step">
+          <span class="step-num">05</span>
+          <h3>Score</h3>
+          <p>Passed only if the held-out tests pass within the time budget. A CLI that
+             couldn’t be invoked is an agent-error — excluded, never a loss.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="agents">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Supported agents</h2>
+        <p>Autonomy levels are matched as closely as each CLI allows — auto-approved
+           edits, no interactive prompts. Adding your own agent is one ~80-line adapter.</p>
+      </div>
+      <div class="agents-scroll">
+        <table class="agents">
+          <thead>
+            <tr>
+              <th scope="col">Adapter</th>
+              <th scope="col">Invocation</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>claude-code</td>
+              <td class="inv">claude -p --output-format json --permission-mode acceptEdits</td>
+              <td><span class="chip">verified</span></td>
+            </tr>
+            <tr>
+              <td>oxagen</td>
+              <td class="inv">oxagen --local --output-format json -- &lt;prompt&gt;</td>
+              <td><span class="chip">verified</span></td>
+            </tr>
+            <tr>
+              <td>stella</td>
+              <td class="inv">stella run &lt;prompt&gt; + STELLA_* env</td>
+              <td><span class="chip">verified</span></td>
+            </tr>
+            <tr>
+              <td>gemini</td>
+              <td class="inv">gemini -p &lt;prompt&gt; --output-format json --approval-mode auto_edit</td>
+              <td><span class="chip">envelope-tested</span></td>
+            </tr>
+            <tr>
+              <td>yours</td>
+              <td class="inv">one small adapter: how to invoke your CLI headlessly, how to map its envelope</td>
+              <td><span class="chip">PRs welcome</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="harbor">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Scale up: SWE-bench Verified via Harbor</h2>
+        <p>The built-in suite is a calibration set, not a research benchmark. For
+           publishable resolve-rate claims, the Harbor adapter runs your agent through the
+           official, containerized SWE-bench verifier — head-to-head against the agents
+           Harbor already ships, scored by the same repo-native test suites. Wiring up
+           your agent is one spec file, no Python.</p>
+      </div>
+      <div class="terminal" role="figure" aria-label="Harbor quick start">
+<pre><span class="prompt">$</span> cd harbor &amp;&amp; pip install -e .
+<span class="prompt">$</span> export ARENA_AGENT_SPEC=$PWD/my-agent.toml
+<span class="prompt">$</span> harbor run --agent-import-path arena_harbor:ByoAgent \
+    --dataset swe-bench/swe-bench-verified -m anthropic/claude-sonnet-5</pre>
+      </div>
+    </div>
+  </section>
+
+  <section id="publish">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Before you publish a number</h2>
+        <p>The methodology is a contract. If a published claim violates it, the claim —
+           not the reader — is wrong.</p>
+      </div>
+      <ul class="checklist">
+        <li><span><strong>Same model on every agent.</strong> The manifest must say
+            <code>matchedModels: true</code>.</span></li>
+        <li><span><strong>Pre-committed task set and trial count.</strong> Link the commit
+            that fixed them before the run.</span></li>
+        <li><span><strong>Significance on the metric you claim.</strong> p &lt; 0.05 on
+            McNemar, or a bootstrap CI that excludes zero.</span></li>
+        <li><span><strong>The full run directory, published.</strong> Manifest, per-trial
+            JSON, transcripts, diffs, report.</span></li>
+        <li><span><strong>A conflict-of-interest note</strong> if you built one of the
+            agents.</span></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p class="tagline">Same model. Same budget. Same timeout. Full receipts.</p>
+    <p>
+      <a href="https://github.com/macanderson/arena">github.com/macanderson/arena</a>
+      · MIT · an <a href="https://oxagen.sh">Oxagen</a> project
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

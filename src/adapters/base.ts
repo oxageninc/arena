@@ -19,6 +19,9 @@ export interface AdapterRunArgs {
   budgetUsd: number | undefined;
   timeoutSeconds: number;
   workDir: string;
+  /** Task fixture directory. Only the in-process mock may read it; real CLIs
+   * must never see the fixture (it contains the held-out tests). */
+  taskDir: string;
 }
 
 export interface ExecOutcome {
@@ -71,17 +74,22 @@ export abstract class Adapter {
     }
   }
 
+  private cachedVersion: string | undefined;
+
   version(): string {
-    try {
-      return execFileSync(this.bin(), ["--version"], {
-        encoding: "utf8",
-        timeout: 10_000,
-      })
-        .trim()
-        .split("\n")[0] as string;
-    } catch {
-      return "unknown";
+    if (this.cachedVersion === undefined) {
+      try {
+        this.cachedVersion = execFileSync(this.bin(), ["--version"], {
+          encoding: "utf8",
+          timeout: 10_000,
+        })
+          .trim()
+          .split("\n")[0] as string;
+      } catch {
+        this.cachedVersion = "unknown";
+      }
     }
+    return this.cachedVersion;
   }
 
   /**

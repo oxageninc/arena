@@ -28,13 +28,13 @@ from .spec import (
 )
 
 __all__ = [
+    "AgentSpec",
     "ArenaInstalledAgent",
     "ByoAgent",
-    "OxagenAgent",
-    "StellaAgent",
-    "AgentSpec",
     "InstallSpec",
     "MetricsSpec",
+    "OxagenAgent",
+    "StellaAgent",
     "load_spec_file",
     "load_spec_from_env",
     "spec_from_dict",

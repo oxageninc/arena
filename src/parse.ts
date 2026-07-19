@@ -30,23 +30,41 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
 export function parseJsonEnvelope(stdout: string): Record<string, unknown> | null {
   if (!stdout) return null;
 
+  // Pass 1 — line-oriented JSONL scan. Robust to banner text because only
+  // whole lines that are complete JSON objects are considered.
+  let lineFallback: Record<string, unknown> | null = null;
   const lines = stdout
     .split("\n")
     .map((line) => line.trim())
     .filter((line) => line.startsWith("{"));
-
-  let fallback: Record<string, unknown> | null = null;
-
   for (let i = lines.length - 1; i >= 0; i--) {
-    try {
-      const obj: unknown = JSON.parse(lines[i] as string);
-      if (!isRecord(obj)) continue;
-      if (fallback === null) fallback = obj;
-      if (obj["type"] === "result") return obj;
-    } catch {
-      // Not a complete JSON object line — skip.
-    }
+    const obj = tryParseRecord(lines[i] as string);
+    if (!obj) continue;
+    if (obj["type"] === "result") return obj;
+    lineFallback ??= obj;
   }
+
+  // Pass 2 — brace-matched scan, needed for multi-line (pretty-printed)
+  // objects the line scan cannot see.
+  let blockFallback: Record<string, unknown> | null = null;
+  for (const block of topLevelJsonBlocks(stdout).reverse()) {
+    const obj = tryParseRecord(block);
+    if (!obj) continue;
+    if (obj["type"] === "result") return obj;
+    blockFallback ??= obj;
+  }
+
+  return lineFallback ?? blockFallback;
+}
+
+function tryParseRecord(text: string): Record<string, unknown> | null {
+  try {
+    const obj: unknown = JSON.parse(text);
+    return isRecord(obj) ? obj : null;
+  } catch {
+    return null;
+  }
+}
 
   // No single-line result envelope. Pretty-printed envelopes span lines, so
   // fall back to a string-aware brace scan over the whole output.

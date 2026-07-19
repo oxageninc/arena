@@ -1,0 +1,648 @@
+/* Arena — arena.oxagen.sh
+   All-neutral palette. IBM Plex Sans for prose, IBM Plex Mono for every
+   number, label, and command. The geometric stadium (rect + semicircular
+   caps) is the recurring construction: the mark, the pills, the CI capsules. */
+
+:root {
+  --ink: #131312;
+  --ink-soft: #3a3a37;
+  --ink-faint: #6b6b67;
+  --paper: #fcfcfb;
+  --panel: #f1f1ef;
+  --hairline: #d8d8d5;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --measure: 62ch;
+  --radius-pill: 999px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e9e9e6;
+    --ink-soft: #c2c2be;
+    --ink-faint: #8f8f8a;
+    --paper: #131312;
+    --panel: #1d1d1b;
+    --hairline: #353532;
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+body {
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.wrap {
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+code,
+pre,
+.mono {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── header ─────────────────────────────────────────────────────────── */
+
+.site-header {
+  border-bottom: 1px solid var(--hairline);
+}
+
+.site-header .wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  text-decoration: none;
+}
+
+.brand svg {
+  width: 2.1rem;
+  height: 2.1rem;
+  display: block;
+}
+
+.brand .wordmark {
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.34em;
+  translate: 0 -1px;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+}
+
+.site-nav a {
+  text-decoration: none;
+  color: var(--ink-soft);
+}
+
+.site-nav a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .site-nav a:not(.pill) {
+    display: none;
+  }
+}
+
+/* ── stadium pills ──────────────────────────────────────────────────── */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-pill);
+  padding: 0.5rem 1.15rem;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--ink);
+  background: transparent;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.pill:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.pill--solid {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.pill--solid:hover {
+  background: transparent;
+  color: var(--ink);
+}
+
+.chip {
+  display: inline-block;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-pill);
+  padding: 0.1rem 0.65rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+/* ── hero ───────────────────────────────────────────────────────────── */
+
+.hero {
+  padding: 4.5rem 0 4rem;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.hero-mark {
+  width: 7.5rem;
+  height: auto;
+  display: block;
+  margin-bottom: 2rem;
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 1rem;
+}
+
+.hero h1 {
+  font-size: clamp(1.9rem, 4.5vw, 3rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  max-width: 24ch;
+  margin-bottom: 1.4rem;
+}
+
+.hero .lede {
+  max-width: var(--measure);
+  color: var(--ink-soft);
+  margin-bottom: 2.2rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-bottom: 2.6rem;
+}
+
+.terminal {
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  padding: 1.1rem 1.3rem;
+  overflow-x: auto;
+  max-width: 46rem;
+}
+
+.terminal pre {
+  font-size: 0.86rem;
+  line-height: 1.75;
+  white-space: pre;
+}
+
+.terminal .cmt {
+  color: var(--ink-faint);
+}
+
+.terminal .prompt {
+  color: var(--ink-faint);
+  user-select: none;
+}
+
+/* ── sections ───────────────────────────────────────────────────────── */
+
+section {
+  padding: 4rem 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+section:last-of-type {
+  border-bottom: none;
+}
+
+.section-head {
+  margin-bottom: 2.4rem;
+  max-width: var(--measure);
+}
+
+.section-head h2 {
+  font-size: 1.55rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.7rem;
+}
+
+.section-head p {
+  color: var(--ink-soft);
+}
+
+/* attack / defense ledger */
+
+.ledger {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--hairline);
+}
+
+.ledger-row {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 2rem;
+  padding: 1.35rem 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.ledger-row dt {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.ledger-row dt::before {
+  content: "“";
+  color: var(--ink-faint);
+}
+
+.ledger-row dt::after {
+  content: "”";
+  color: var(--ink-faint);
+}
+
+.ledger-row dd {
+  color: var(--ink-soft);
+  font-size: 0.98rem;
+}
+
+@media (max-width: 720px) {
+  .ledger-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+/* ── specimen report ────────────────────────────────────────────────── */
+
+.report-card {
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.report-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.85rem 1.25rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--hairline);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+
+.report-scroll {
+  overflow-x: auto;
+}
+
+table.report {
+  width: 100%;
+  min-width: 44rem;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+table.report th {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  text-align: left;
+  padding: 0.8rem 1.25rem;
+  border-bottom: 1px solid var(--hairline);
+  white-space: nowrap;
+}
+
+table.report td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--hairline);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+table.report tr:last-child td {
+  border-bottom: none;
+}
+
+table.report td.num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.agent-name {
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Wilson CI capsule: hairline track 0–100%, ink capsule spanning the CI,
+   a 2px tick at the point estimate. Values are also printed as text, so the
+   graphic is never the only encoding. */
+
+.ci {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.ci-track {
+  position: relative;
+  width: 11rem;
+  height: 10px;
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-pill);
+  flex: none;
+}
+
+.ci-band {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  background: var(--ink-faint);
+  opacity: 0.45;
+  border-radius: var(--radius-pill);
+}
+
+.ci-point {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--ink);
+  translate: -50% 0;
+}
+
+.ci-label {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.88rem;
+}
+
+.ci-label small {
+  color: var(--ink-faint);
+  font-size: 0.78rem;
+}
+
+.report-foot {
+  padding: 0.9rem 1.25rem;
+  border-top: 1px solid var(--hairline);
+  font-size: 0.86rem;
+  color: var(--ink-faint);
+}
+
+.report-foot code {
+  font-size: 0.82rem;
+}
+
+/* ── trial anatomy ──────────────────────────────────────────────────── */
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1.5rem;
+  counter-reset: step;
+}
+
+.step {
+  border-top: 2px solid var(--ink);
+  padding-top: 1rem;
+}
+
+.step .step-num {
+  display: inline-block;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-pill);
+  padding: 0.05rem 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  margin-bottom: 0.7rem;
+}
+
+.step h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.step p {
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 900px) {
+  .steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── agents table ───────────────────────────────────────────────────── */
+
+.agents-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+}
+
+table.agents {
+  width: 100%;
+  min-width: 40rem;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+table.agents th {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  text-align: left;
+  padding: 0.8rem 1.25rem;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--panel);
+}
+
+table.agents td {
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--hairline);
+  vertical-align: top;
+}
+
+table.agents tr:last-child td {
+  border-bottom: none;
+}
+
+table.agents td:first-child {
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+table.agents td.inv {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+/* ── checklist ──────────────────────────────────────────────────────── */
+
+.checklist {
+  list-style: none;
+  max-width: var(--measure);
+  border-top: 1px solid var(--hairline);
+}
+
+.checklist li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--hairline);
+  color: var(--ink-soft);
+}
+
+.checklist li::before {
+  content: "☐";
+  font-family: var(--mono);
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.checklist strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ── footer ─────────────────────────────────────────────────────────── */
+
+.site-footer {
+  border-top: 1px solid var(--hairline);
+  padding: 2.2rem 0 3rem;
+}
+
+.site-footer .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.site-footer p,
+.site-footer a {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+
+.site-footer .tagline {
+  color: var(--ink-soft);
+}
+
+/* ── load-in (hero only, disabled under reduced motion) ─────────────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero > .wrap > * {
+    animation: rise 480ms ease both;
+  }
+  .hero > .wrap > *:nth-child(2) {
+    animation-delay: 60ms;
+  }
+  .hero > .wrap > *:nth-child(3) {
+    animation-delay: 120ms;
+  }
+  .hero > .wrap > *:nth-child(4) {
+    animation-delay: 180ms;
+  }
+  .hero > .wrap > *:nth-child(5) {
+    animation-delay: 240ms;
+  }
+  .hero > .wrap > *:nth-child(6) {
+    animation-delay: 300ms;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    translate: 0 10px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}

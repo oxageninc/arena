@@ -55,7 +55,7 @@ switch (command) {
     cmdReport(rest);
     break;
   case "verify":
-    cmdVerify(rest);
+    await cmdVerify(rest);
     break;
   case "baseline":
     cmdBaseline(rest);
@@ -181,6 +181,7 @@ async function cmdRun(argv: string[]): Promise<void> {
     }
   }
 
+  const budgetUsd = values.budget !== undefined ? numFlag("budget", values.budget) : undefined;
   const config = {
     agents,
     tasks,
@@ -240,7 +241,7 @@ function cmdReport(argv: string[]): void {
  * workspace (no tautological tests) and PASS against the reference solution
  * (the task is actually solvable). CI runs this on every push.
  */
-function cmdVerify(argv: string[]): void {
+async function cmdVerify(argv: string[]): Promise<void> {
   const all = loadTasks(TASK_ROOT);
   if (argv.length > 0) {
     // An id that matches nothing must fail loudly: CI configured with a
@@ -258,12 +259,12 @@ function cmdVerify(argv: string[]): void {
     const pristineDir = mkdtempSync(join(tmpdir(), "arena-audit-"));
     const solvedDir = mkdtempSync(join(tmpdir(), "arena-audit-"));
     try {
-      seedWorkspace(task, pristineDir);
-      const pristine = runVerification(task, pristineDir);
+      await seedWorkspace(task, pristineDir);
+      const pristine = await runVerification(task, pristineDir);
 
-      seedWorkspace(task, solvedDir);
-      applySolution(task, solvedDir);
-      const solved = runVerification(task, solvedDir);
+      await seedWorkspace(task, solvedDir);
+      await applySolution(task, solvedDir);
+      const solved = await runVerification(task, solvedDir);
 
       const ok = !pristine.passed && solved.passed;
       if (!ok) failures++;

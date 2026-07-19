@@ -33,10 +33,6 @@ export function loadRun(runDir: string): {
   };
 }
 
-function agentKey(r: TrialResult): string {
-  return `${r.agent.adapter} (${r.agent.model})`;
-}
-
 function pct(x: number): string {
   return `${(x * 100).toFixed(1)}%`;
 }
@@ -53,7 +49,10 @@ function fmtDelta(x: number): string {
 export function generateReport(runDir: string): string {
   const { manifest, results } = loadRun(runDir);
 
-  const keys = [...new Set(results.map(agentKey))];
+  // Aggregation lives in perAgentSummary so the report, the baseline snapshot,
+  // and the regression gate always agree exactly.
+  const summaries = perAgentSummary(results);
+  const keys = summaries.map((s) => s.key);
   const byAgent = new Map<string, TrialResult[]>(
     keys.map((k) => [k, results.filter((r) => agentKey(r) === k)]),
   );

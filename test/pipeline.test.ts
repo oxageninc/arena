@@ -37,30 +37,30 @@ describe("task fixtures", () => {
     }
   });
 
-  it("every task discriminates: pristine fails, solution passes", () => {
+  it("every task discriminates: pristine fails, solution passes", async () => {
     for (const task of tasks) {
       const pristineDir = scratch();
-      seedWorkspace(task, pristineDir);
-      const pristine = runVerification(task, pristineDir);
+      await seedWorkspace(task, pristineDir);
+      const pristine = await runVerification(task, pristineDir);
       expect(
         pristine.passed,
         `${task.id}: held-out tests must FAIL on the pristine workspace`,
       ).toBe(false);
 
       const solvedDir = scratch();
-      seedWorkspace(task, solvedDir);
-      applySolution(task, solvedDir);
-      const solved = runVerification(task, solvedDir);
+      await seedWorkspace(task, solvedDir);
+      await applySolution(task, solvedDir);
+      const solved = await runVerification(task, solvedDir);
       expect(solved.passed, `${task.id}: reference solution must pass:\n${solved.output}`).toBe(
         true,
       );
     }
   }, 300_000);
 
-  it("verification removes agent-planted .arena-verify content", () => {
+  it("verification removes agent-planted .arena-verify content", async () => {
     const task = loadTasks(TASK_ROOT)[0]!;
     const dir = scratch();
-    seedWorkspace(task, dir);
+    await seedWorkspace(task, dir);
     // Simulate an adversarial agent planting a trivially-green test suite.
     const planted = join(dir, ".arena-verify");
     mkdirSync(planted, { recursive: true });
@@ -68,7 +68,7 @@ describe("task fixtures", () => {
       join(planted, "fake.test.mjs"),
       'import { test } from "node:test"; test("ok", () => {});',
     );
-    const result = runVerification(task, dir);
+    const result = await runVerification(task, dir);
     expect(result.passed).toBe(false);
   });
 });
@@ -119,13 +119,7 @@ describe("full run with mock agents", () => {
     expect(persisted.results).toHaveLength(results.length);
   }, 300_000);
 
-  it("marks an uninvocable agent as agent-error, not failed", async () => {
-    const _outDir = scratch();
-    const _tasks = loadTasks(TASK_ROOT).slice(0, 1);
-
-    // stella with a bin override pointing at a nonexistent binary would fail
-    // isAvailable(); instead simulate via a mock whose execute spawn errors by
-    // overriding bin to a missing path through the real spawn path.
+  it("surfaces a spawn failure as spawnError (classified agent-error, never a loss)", async () => {
     const { StellaAdapter } = await import("../src/adapters/stella.js");
     const adapter = new StellaAdapter({ bin: "/nonexistent/definitely-missing" });
     const outcome = await adapter.execute({
@@ -134,6 +128,7 @@ describe("full run with mock agents", () => {
       budgetUsd: undefined,
       timeoutSeconds: 5,
       workDir: scratch(),
+      taskDir: scratch(),
     });
     expect(outcome.spawnError).toBeDefined();
   });

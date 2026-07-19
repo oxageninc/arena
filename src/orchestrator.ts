@@ -20,13 +20,13 @@ import { arch, platform, tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { type Adapter, createAdapter } from "./adapters/index.js";
-import { MockAdapter } from "./adapters/mock.js";
 import { diffStats, sanitizeSegment } from "./parse.js";
 import { computeCost, loadPricing } from "./pricing.js";
 import type {
   AgentSpec,
   LoadedTask,
   Outcome,
+  PricingTable,
   RunConfig,
   RunManifest,
   TrialResult,
@@ -95,7 +95,7 @@ export async function executeRun(
     for (const task of config.tasks) {
       for (const { spec, adapter } of ordered) {
         log(`▶ trial ${trial}/${config.trials} · ${task.id} · ${spec.adapter} (${spec.model})`);
-        const result = await runOne(task, spec, adapter, trial, config, runId, runDir);
+        const result = await runOne(task, spec, adapter, trial, config, runId, runDir, pricing);
         results.push(result);
         writeFileSync(join(runDir, "trials", `${result.id}.json`), JSON.stringify(result, null, 2));
         // Rewritten after every trial so a mid-run crash still leaves an
@@ -122,14 +122,14 @@ async function runOne(
   config: RunConfig,
   runId: string,
   runDir: string,
+  pricing: PricingTable,
 ): Promise<TrialResult> {
   const workDir = join(tmpdir(), `arena-${sanitizeSegment(task.id)}-${randomUUID()}`);
   const id = `${task.id}-${spec.adapter}-${sanitizeSegment(spec.model)}-t${trial}`;
   let startedAt = new Date();
 
   try {
-    seedWorkspace(task, workDir);
-    MockAdapter.currentTaskDir = task.dir;
+    await seedWorkspace(task, workDir);
 
     // Started only now: wall clock measures spawn-to-exit, not harness seeding.
     startedAt = new Date();
@@ -139,6 +139,7 @@ async function runOne(
       budgetUsd: config.budgetUsd,
       timeoutSeconds: config.timeoutSeconds,
       workDir,
+      taskDir: task.dir,
     });
 
     const finishedAt = new Date();
@@ -165,9 +166,13 @@ async function runOne(
     if (invocationFailure) {
       outcome = "agent-error";
     } else {
-      verify = runVerification(task, workDir);
-      if (verify.passed) outcome = "passed";
-      else outcome = exec.timedOut ? "timeout" : "failed";
+      verify = await runVerification(task, workDir);
+      // A trial that blew the wall-clock cap is a timeout even if the tests
+      // happen to pass on whatever state the kill left behind — exceeding the
+      // matched budget must never score as a win (see METHODOLOGY.md).
+      if (exec.timedOut) outcome = "timeout";
+      else if (verify.passed) outcome = "passed";
+      else outcome = "failed";
     }
 
     const transcriptPath = join("transcripts", `${id}.txt`);
@@ -215,9 +220,9 @@ async function runOne(
       },
       tokens: envelope.tokens,
       cost: {
-        computedUsd: computeCost(envelope.tokens, spec.model, loadPricingCached()),
+        computedUsd: computeCost(envelope.tokens, spec.model, pricing),
         agentReportedUsd: envelope.agentReportedUsd,
-        pricingModel: loadPricingCached()[spec.model] ? spec.model : null,
+        pricingModel: pricing[spec.model] ? spec.model : null,
       },
       activity: {
         toolCalls: envelope.toolCalls,
@@ -288,15 +293,8 @@ async function runOne(
       error: `harness error: ${message}`,
     };
   } finally {
-    MockAdapter.currentTaskDir = null;
     rmSync(workDir, { recursive: true, force: true });
   }
-}
-
-let pricingCache: ReturnType<typeof loadPricing> | null = null;
-function loadPricingCached(): ReturnType<typeof loadPricing> {
-  pricingCache ??= loadPricing();
-  return pricingCache;
 }
 
 function gitSha(): string {
@@ -311,9 +309,7 @@ function gitSha(): string {
 }
 
 function buildReproduceCommand(config: RunConfig): string {
-  const agents = config.agents
-    .map((a) => (a.model ? `${a.adapter}=${a.model}` : a.adapter))
-    .join(",");
+  const agents = config.agents.map((a) => `${a.adapter}=${a.model}`).join(",");
   const parts = [
     "pnpm arena run",
     `--agents ${agents}`,

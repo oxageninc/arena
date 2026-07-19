@@ -27,11 +27,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7.0", "pytest-asyncio>=0.21"]
+dev = ["pytest>=7.0", "pytest-asyncio>=0.21", "ruff>=0.8"]
 
 [project.urls]
-Homepage = "https://github.com/oxageninc/arena"
-Repository = "https://github.com/oxageninc/arena"
+Homepage = "https://github.com/macanderson/arena"
+Repository = "https://github.com/macanderson/arena"
 
 [tool.setuptools]
 packages = ["arena_harbor"]
@@ -42,3 +42,15 @@ arena_harbor = ["py.typed"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+ignore = [
+  # Broad excepts are deliberate at the agent-run boundary (never let an agent
+  # crash abort scoring); each site carries a comment.
+  "BLE001",
+]

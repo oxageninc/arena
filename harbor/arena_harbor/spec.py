@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import os
+import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal
@@ -22,7 +23,7 @@ from typing import Any, Literal
 InstallKind = Literal["binary", "script"]
 
 
-@dataclass
+@dataclass(frozen=True)
 class InstallSpec:
     """How the agent binary gets into the (Linux) container.
 
@@ -43,7 +44,7 @@ class InstallSpec:
     system_packages: list[str] = field(default_factory=list)
 
 
-@dataclass
+@dataclass(frozen=True)
 class MetricsSpec:
     """How to recover token/cost numbers from the agent's stdout.
 
@@ -70,7 +71,7 @@ class MetricsSpec:
     total_regex: str | None = None
 
 
-@dataclass
+@dataclass(frozen=True)
 class AgentSpec:
     """A complete recipe for running one coding CLI under Harbor."""
 
@@ -176,10 +177,7 @@ def load_spec_file(path: str | Path) -> AgentSpec:
     if not p.is_file():
         raise FileNotFoundError(f"agent spec file not found: {p}")
     text = p.read_text()
-    if p.suffix.lower() == ".json":
-        data = json.loads(text)
-    else:
-        data = _load_toml(text)
+    data = json.loads(text) if p.suffix.lower() == ".json" else tomllib.loads(text)
     if not isinstance(data, dict):
         raise ValueError(f"{p}: top level must be a table/object")
     return spec_from_dict(data)
@@ -195,17 +193,3 @@ def load_spec_from_env(env_var: str = "ARENA_AGENT_SPEC") -> AgentSpec:
             f"(see specs/byo.example.toml)."
         )
     return load_spec_file(path)
-
-
-def _load_toml(text: str) -> Any:
-    try:
-        import tomllib  # Python 3.11+
-    except ModuleNotFoundError:  # pragma: no cover - exercised on <3.11 only
-        try:
-            import tomli as tomllib  # type: ignore[no-redef]
-        except ModuleNotFoundError as exc:  # pragma: no cover
-            raise RuntimeError(
-                "Parsing TOML specs on Python < 3.11 needs the 'tomli' package "
-                "(pip install tomli), or use a .json spec instead."
-            ) from exc
-    return tomllib.loads(text)
