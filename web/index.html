@@ -50,8 +50,14 @@
       <p class="lede">
         Arena runs two or more coding agents — Claude&nbsp;Code, Gemini&nbsp;CLI, Oxagen,
         Stella, or your own — on the same tasks with the same model, budget, and timeout.
-        Held-out tests the agent can never see or author decide every outcome. Each metric
+        Held-out tests, copied in only after the agent exits, decide every outcome. Each metric
         is reported separately, with real statistics and full receipts.
+      </p>
+      <p class="note">
+        Arena is built by the team behind Oxagen and Stella — two of the agents it benchmarks.
+        Assume bias and check us: every run ships a reproduce command that runs on your machine
+        with your keys. (The local suite is not network-sandboxed; for contamination-proof
+        grading use the Harbor adapter.)
       </p>
       <div class="hero-actions">
         <a class="pill pill--solid" href="https://github.com/macanderson/arena">View on GitHub</a>
@@ -227,8 +233,12 @@
     <div class="wrap">
       <div class="section-head">
         <h2>Supported agents</h2>
-        <p>Autonomy levels are matched as closely as each CLI allows — auto-approved
-           edits, no interactive prompts. Adding your own agent is one ~80-line adapter.</p>
+        <p>Autonomy is <strong>not yet fully matched</strong>, and today the gap favors the
+           author's own agents: Claude&nbsp;Code and Gemini auto-approve edits but can't run
+           arbitrary shell, while Oxagen and Stella run one-shot ungated. On tasks graded by
+           running tests that's a real edge — so don't back an Oxagen/Stella-vs-competitor claim
+           on the local suite until autonomy is pinned to a matched level. Adding your own agent
+           is one ~80-line adapter.</p>
       </div>
       <div class="agents-scroll">
         <table class="agents">

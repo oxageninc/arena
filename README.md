@@ -11,7 +11,11 @@
 
 **Head-to-head benchmarks for agentic coding CLIs — built to survive scrutiny.** · [arena.oxagen.sh](https://arena.oxagen.sh)
 
-Arena runs two or more coding agents (Claude Code, Gemini CLI, [Oxagen](https://oxagen.sh), [Stella](https://github.com/macanderson/stella), or your own) on the **same tasks, same model, same budget, same timeout**, grades them with **held-out tests the agent can never see or author**, and reports each metric separately with real statistics and full receipts.
+> **Conflict of interest.** Arena is built by the team behind [Oxagen](https://oxagen.sh) and [Stella](https://github.com/macanderson/stella) — two of the agents it benchmarks. Assume bias and check us: every run ships its manifest, per-trial JSON, transcripts, and diffs, and the [`reproduce` command](#reproducing-a-run) runs on your machine with your keys. Don't take a number from us you can't regenerate yourself. This is the same disclosure the [publish bar](#what-it-takes-to-publish) requires of anyone.
+
+Arena runs two or more coding agents (Claude Code, Gemini CLI, [Oxagen](https://oxagen.sh), [Stella](https://github.com/macanderson/stella), or your own) on the **same tasks, same model, same budget, same timeout**, grades them with **held-out tests copied in only after the agent exits** (never present in the workspace while it runs), and reports each metric separately with real statistics and full receipts.
+
+> The local suite is not adversarially sandboxed: the verify tests exist elsewhere on disk (and are public in this repo), so "held out" means *not in the agent's workspace*, not *unreachable*. For contamination-proof, network-isolated grading, run the [Harbor adapter](harbor/) — its Docker verifier never exposes the grader to the agent.
 
 ```bash
 git clone https://github.com/macanderson/arena
@@ -54,7 +58,7 @@ Because most agent-vs-agent numbers don't survive five minutes of skeptical read
 | `gemini` | `gemini -p <prompt> --output-format json --approval-mode auto_edit` | envelope-tested; re-verify flags against your installed version |
 | `mock` | in-process (CI / smoke) | built-in |
 
-Autonomy levels are matched as closely as each CLI allows (auto-approve edits, no interactive prompts). Binary overrides: `--agents oxagen …` + `ARENA_OXAGEN_BIN=/path/to/oxagen`, etc. API keys come from each CLI's normal environment (`ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `ZAI_API_KEY`, …).
+Autonomy is **not** yet fully matched, and the asymmetry favors the author's own agents — disclosed here rather than hidden: `claude-code` (`--permission-mode acceptEdits`) and `gemini` (`--approval-mode auto_edit`) auto-approve file edits but **cannot run arbitrary shell**, while `oxagen` and `stella` run one-shot **ungated** (shell included). On tasks graded by running tests, that is a real advantage for Oxagen/Stella. Until each adapter is pinned to a matched autonomy level (edits-only for all, or full-auto for all via `claude --dangerously-skip-permissions` / `gemini --approval-mode yolo`), do not use local-suite results to back an Oxagen/Stella-vs-competitor claim. The exact flags per adapter are in each adapter's header comment and recorded in the manifest. Binary overrides: `--agents oxagen …` + `ARENA_OXAGEN_BIN=/path/to/oxagen`, etc. API keys come from each CLI's normal environment (`ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `ZAI_API_KEY`, …) — note this means every spawned CLI inherits the full shell environment, including other vendors' keys.
 
 ### Adding your agent
 

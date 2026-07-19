@@ -3,19 +3,28 @@
     "inputPerM": 3,
     "outputPerM": 15,
     "cacheReadPerM": 0.3,
-    "cacheWritePerM": 3.75
+    "cacheWritePerM": 3.75,
+    "source": "https://platform.claude.com/docs/en/pricing",
+    "asOf": "2026-07-19",
+    "note": "Sticker rate. An introductory $2/$10 per MTok applies through 2026-08-31; cacheWrite is the 5-minute-TTL rate (1h TTL is 2x input). Verify before publishing."
   },
   "anthropic/claude-opus-4.8": {
-    "inputPerM": 15,
-    "outputPerM": 75,
-    "cacheReadPerM": 1.5,
-    "cacheWritePerM": 18.75
+    "inputPerM": 5,
+    "outputPerM": 25,
+    "cacheReadPerM": 0.5,
+    "cacheWritePerM": 6.25,
+    "source": "https://platform.claude.com/docs/en/pricing",
+    "asOf": "2026-07-19",
+    "note": "cacheWrite is the 5-minute-TTL rate (1h TTL is 2x input). Verify before publishing."
   },
   "anthropic/claude-haiku-4.5": {
-    "inputPerM": 0.8,
-    "outputPerM": 4,
-    "cacheReadPerM": 0.08,
-    "cacheWritePerM": 1
+    "inputPerM": 1,
+    "outputPerM": 5,
+    "cacheReadPerM": 0.1,
+    "cacheWritePerM": 1.25,
+    "source": "https://platform.claude.com/docs/en/pricing",
+    "asOf": "2026-07-19",
+    "note": "cacheWrite is the 5-minute-TTL rate (1h TTL is 2x input). Verify before publishing."
   },
   "zai/glm-5.2": {
     "inputPerM": 0.6,
@@ -27,6 +36,6 @@
     "inputPerM": 1.25,
     "outputPerM": 10,
     "cacheReadPerM": 0.31,
-    "note": "Verify against current Google AI pricing before publishing."
+    "note": "Verify against current Google AI pricing before publishing. Ignores the >200k-token context tier ($2.50/$15)."
   }
 }

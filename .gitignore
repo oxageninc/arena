@@ -18,3 +18,6 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 *.pyc
+
+# local Claude Code worktrees/scratch
+.claude/

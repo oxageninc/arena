@@ -9,8 +9,8 @@ import {
 } from "../src/stats.js";
 
 describe("wilsonInterval", () => {
-  it("is [0,0] for n=0", () => {
-    expect(wilsonInterval(0, 0)).toEqual([0, 0]);
+  it("is [0,1] (maximal uncertainty) for n=0, not false certainty", () => {
+    expect(wilsonInterval(0, 0)).toEqual([0, 1]);
   });
 
   it("brackets the point estimate and stays in [0,1]", () => {

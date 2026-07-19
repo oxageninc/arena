@@ -7,7 +7,11 @@
 
 /** 95% Wilson score interval for a binomial proportion. */
 export function wilsonInterval(successes: number, n: number, z = 1.96): [number, number] {
-  if (n === 0) return [0, 0];
+  // No observations → maximal uncertainty, not false certainty. Returning [0,0]
+  // reads as "provably 0% success" and makes the regression gate certify a
+  // "100% drop" when a run has zero scored trials (e.g. every trial was an
+  // excluded agent-error) — the exact case the gate must NOT fail on.
+  if (n === 0) return [0, 1];
   const p = successes / n;
   const denom = 1 + (z * z) / n;
   const center = p + (z * z) / (2 * n);
@@ -117,7 +121,12 @@ export function pairedBootstrapDelta(
   if (deltas.length < iterations / 2) return null;
 
   deltas.sort((x, y) => x - y);
-  const lo = deltas[Math.floor(deltas.length * 0.025)] as number;
-  const hi = deltas[Math.min(deltas.length - 1, Math.ceil(deltas.length * 0.975))] as number;
+  // Type-1 empirical quantile (index ceil(q·N)-1), symmetric on both tails.
+  // The previous floor/ceil pair trimmed 2.5% below but only 2.45% above,
+  // biasing the interval — the kind of asymmetry a hostile reviewer diffs.
+  const quantileIdx = (q: number): number =>
+    Math.min(deltas.length - 1, Math.max(0, Math.ceil(q * deltas.length) - 1));
+  const lo = deltas[quantileIdx(0.025)] as number;
+  const hi = deltas[quantileIdx(0.975)] as number;
   return { relativeDelta: point, ci: [lo, hi], n };
 }
