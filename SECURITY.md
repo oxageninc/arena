@@ -4,7 +4,7 @@
 
 Please **do not** open a public issue for security vulnerabilities.
 
-Report privately via GitHub's [**Report a vulnerability**](https://github.com/oxageninc/arena/security/advisories/new) button on the repository's Security tab (Security → Advisories → Report a vulnerability). This opens a private channel with the maintainers.
+Report privately via GitHub's [**Report a vulnerability**](https://github.com/macanderson/arena/security/advisories/new) button on the repository's Security tab (Security → Advisories → Report a vulnerability). This opens a private channel with the maintainers.
 
 We aim to acknowledge reports within 3 business days and to ship a fix or mitigation for confirmed high-severity issues as quickly as is practical. We'll coordinate a disclosure timeline with you and credit you in the advisory unless you prefer otherwise.
 

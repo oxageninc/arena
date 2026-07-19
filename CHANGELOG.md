@@ -52,5 +52,5 @@ CLIs, engineered to survive scrutiny.
   Dependabot, and a dependency-review gate that blocks known-vulnerable PRs.
 - `SECURITY.md` with a private vulnerability reporting channel.
 
-[Unreleased]: https://github.com/oxageninc/arena/compare/5122005...HEAD
-[0.1.0]: https://github.com/oxageninc/arena/releases/tag/v0.1.0
+[Unreleased]: https://github.com/macanderson/arena/compare/5122005...HEAD
+[0.1.0]: https://github.com/macanderson/arena/releases/tag/v0.1.0

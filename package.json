@@ -6,7 +6,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/oxageninc/arena.git"
+    "url": "https://github.com/macanderson/arena.git"
   },
   "keywords": [
     "benchmark",
