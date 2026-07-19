@@ -12,6 +12,7 @@ const baseArgs: AdapterRunArgs = {
   budgetUsd: 5,
   timeoutSeconds: 600,
   workDir: "/tmp/x",
+  taskDir: "/tmp/task",
 };
 
 describe("registry", () => {

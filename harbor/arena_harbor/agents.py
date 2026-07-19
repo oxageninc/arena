@@ -44,6 +44,8 @@ class ByoAgent(ArenaInstalledAgent):
     loaded once and cached on the instance.
     """
 
+    _spec: AgentSpec | None = None
+
     @staticmethod
     def name() -> str:
         # Static so Harbor can label results without instantiating; the concrete
@@ -51,8 +53,6 @@ class ByoAgent(ArenaInstalledAgent):
         return os.environ.get("ARENA_AGENT_NAME", "arena-byo")
 
     def spec(self) -> AgentSpec:
-        cached = getattr(self, "_spec", None)
-        if cached is None:
-            cached = load_spec_from_env()
-            self._spec = cached
-        return cached
+        if self._spec is None:
+            self._spec = load_spec_from_env()
+        return self._spec

@@ -10,7 +10,7 @@ import pytest
 
 pytest.importorskip("harbor")
 
-from arena_harbor import ByoAgent, OxagenAgent, StellaAgent  # noqa: E402
+from arena_harbor import ByoAgent, OxagenAgent, StellaAgent
 
 
 def _mk(agent_cls, tmp_path, model_name="anthropic/claude-sonnet-5"):
@@ -76,7 +76,10 @@ async def test_script_install_uses_override_env(tmp_path, monkeypatch):
 
 async def test_run_invokes_agent_and_captures_output(tmp_path):
     agent = _mk(OxagenAgent, tmp_path)
-    envelope = '{"type":"result","usage":{"inputTokens":1000,"outputTokens":200,"cachedInputTokens":400}}'
+    envelope = (
+        '{"type":"result","usage":'
+        '{"inputTokens":1000,"outputTokens":200,"cachedInputTokens":400}}'
+    )
     env = _mock_env(stdout=envelope)
     context = MagicMock(metadata={})
 

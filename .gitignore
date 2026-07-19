@@ -3,6 +3,11 @@ results/
 dist/
 *.tsbuildinfo
 .DS_Store
+# macOS Finder folder-icon artifact ("Icon\r")
+Icon?
+
+# Vercel project link (contains project/org ids)
+.vercel/
 
 # Agent working caches (code graph, context DB) — never commit.
 .stella/

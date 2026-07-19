@@ -1,10 +1,15 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/logo-icon-dark.svg">
+  <img src="assets/logo-icon.svg" alt="Arena — two nested stadium shapes" width="76">
+</picture>
+
 # Arena
 
 [![CI](https://github.com/oxageninc/arena/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/oxageninc/arena/actions/workflows/ci.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/oxageninc/arena/badge)](https://scorecard.dev/viewer/?uri=github.com/oxageninc/arena)
 
-**Head-to-head benchmarks for agentic coding CLIs — built to survive scrutiny.**
+**Head-to-head benchmarks for agentic coding CLIs — built to survive scrutiny.** · [arena.oxagen.sh](https://arena.oxagen.sh)
 
 Arena runs two or more coding agents (Claude Code, Gemini CLI, [Oxagen](https://oxagen.sh), [Stella](https://github.com/oxageninc/stella), or your own) on the **same tasks, same model, same budget, same timeout**, grades them with **held-out tests the agent can never see or author**, and reports each metric separately with real statistics and full receipts.
 

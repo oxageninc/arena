@@ -15,7 +15,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { isRecord } from "./parse.js";
-import { mcnemarExact, median, pairedBootstrapDelta, wilsonInterval } from "./stats.js";
+import { mcnemarExact, median, pairedBootstrapDelta } from "./stats.js";
+import { agentKey, perAgentSummary } from "./summary.js";
 import type { RunManifest, TrialResult } from "./types.js";
 
 export function loadRun(runDir: string): {
@@ -30,10 +31,6 @@ export function loadRun(runDir: string): {
     manifest: raw["manifest"] as unknown as RunManifest,
     results: raw["results"] as unknown as TrialResult[],
   };
-}
-
-function agentKey(r: TrialResult): string {
-  return `${r.agent.adapter} (${r.agent.model})`;
 }
 
 function pct(x: number): string {
@@ -52,7 +49,10 @@ function fmtDelta(x: number): string {
 export function generateReport(runDir: string): string {
   const { manifest, results } = loadRun(runDir);
 
-  const keys = [...new Set(results.map(agentKey))];
+  // Aggregation lives in perAgentSummary so the report, the baseline snapshot,
+  // and the regression gate always agree exactly.
+  const summaries = perAgentSummary(results);
+  const keys = summaries.map((s) => s.key);
   const byAgent = new Map<string, TrialResult[]>(
     keys.map((k) => [k, results.filter((r) => agentKey(r) === k)]),
   );
@@ -102,17 +102,14 @@ export function generateReport(runDir: string): string {
     "| Agent | Scored trials | Passed | Success rate (95% CI) | Median wall clock | Median tokens (billed) | Median computed cost | Self-reported cost |",
     "|---|---|---|---|---|---|---|---|",
   );
-  for (const key of keys) {
-    const all = byAgent.get(key) ?? [];
-    const scored = all.filter((r) => r.outcome !== "agent-error");
-    const passed = scored.filter((r) => r.outcome === "passed").length;
-    const [lo, hi] = wilsonInterval(passed, scored.length);
-    const wall = median(scored.map((r) => r.timing.wallClockSeconds));
-    const toks = median(scored.map((r) => r.tokens.total));
-    const costs = scored.map((r) => r.cost.computedUsd).filter((c): c is number => c !== null);
-    const self = scored.map((r) => r.cost.agentReportedUsd).filter((c): c is number => c !== null);
+  for (const s of summaries) {
+    const [lo, hi] = s.successCI;
+    const wall =
+      s.medianWallClockSeconds === null ? "—" : `${s.medianWallClockSeconds.toFixed(1)}s`;
+    const toks =
+      s.medianTotalTokens === null ? "—" : Math.round(s.medianTotalTokens).toLocaleString();
     lines.push(
-      `| ${key} | ${String(scored.length)} | ${String(passed)} | ${pct(scored.length ? passed / scored.length : 0)} (${pct(lo)}–${pct(hi)}) | ${wall.toFixed(1)}s | ${Math.round(toks).toLocaleString()} | ${fmtUsd(costs.length ? median(costs) : null)} | ${fmtUsd(self.length ? median(self) : null)} |`,
+      `| ${s.key} | ${String(s.scoredTrials)} | ${String(s.passed)} | ${pct(s.successRate)} (${pct(lo)}–${pct(hi)}) | ${wall} | ${toks} | ${fmtUsd(s.medianComputedCost)} | ${fmtUsd(s.medianAgentReportedCost)} |`,
     );
   }
   lines.push("");

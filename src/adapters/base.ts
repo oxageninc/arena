@@ -19,6 +19,9 @@ export interface AdapterRunArgs {
   budgetUsd: number | undefined;
   timeoutSeconds: number;
   workDir: string;
+  /** Task fixture directory. Only the in-process mock may read it; real CLIs
+   * must never see the fixture (it contains the held-out tests). */
+  taskDir: string;
 }
 
 export interface ExecOutcome {
@@ -71,17 +74,22 @@ export abstract class Adapter {
     }
   }
 
+  private cachedVersion: string | undefined;
+
   version(): string {
-    try {
-      return execFileSync(this.bin(), ["--version"], {
-        encoding: "utf8",
-        timeout: 10_000,
-      })
-        .trim()
-        .split("\n")[0] as string;
-    } catch {
-      return "unknown";
+    if (this.cachedVersion === undefined) {
+      try {
+        this.cachedVersion = execFileSync(this.bin(), ["--version"], {
+          encoding: "utf8",
+          timeout: 10_000,
+        })
+          .trim()
+          .split("\n")[0] as string;
+      } catch {
+        this.cachedVersion = "unknown";
+      }
     }
+    return this.cachedVersion;
   }
 
   /**
@@ -90,37 +98,61 @@ export abstract class Adapter {
    */
   execute(args: AdapterRunArgs): Promise<ExecOutcome> {
     return new Promise((resolve) => {
+      // detached: the agent gets its own process group, so a timeout kill
+      // reaches the whole tree — agents routinely spawn test runners and
+      // shells that would otherwise survive and hold the stdio pipes open.
+      const detached = process.platform !== "win32";
       const child = spawn(this.bin(), this.buildArgs(args), {
         cwd: args.workDir,
         env: { ...process.env, ...this.env(args) },
         stdio: ["ignore", "pipe", "pipe"],
+        detached,
       });
 
       let stdout = "";
       let stderr = "";
       let timedOut = false;
+      let settled = false;
+
+      const killTree = (): void => {
+        if (detached && child.pid !== undefined) {
+          try {
+            process.kill(-child.pid, "SIGKILL");
+            return;
+          } catch {
+            // Process group already gone — fall through to a direct kill.
+          }
+        }
+        child.kill("SIGKILL");
+      };
+
       const timer = setTimeout(() => {
         timedOut = true;
-        child.kill("SIGKILL");
+        killTree();
       }, args.timeoutSeconds * 1000);
+
+      const settle = (outcome: ExecOutcome): void => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(outcome);
+      };
 
       child.stdout.on("data", (chunk: Buffer) => (stdout += chunk.toString()));
       child.stderr.on("data", (chunk: Buffer) => (stderr += chunk.toString()));
 
       child.on("error", (err) => {
-        clearTimeout(timer);
-        resolve({
-          stdout,
-          stderr,
-          exitCode: null,
-          timedOut: false,
-          spawnError: err.message,
-        });
+        settle({ stdout, stderr, exitCode: null, timedOut: false, spawnError: err.message });
       });
 
       child.on("close", (code) => {
-        clearTimeout(timer);
-        resolve({ stdout, stderr, exitCode: code, timedOut });
+        settle({ stdout, stderr, exitCode: code, timedOut });
+      });
+
+      // "close" waits for the stdio streams to drain; an escaped grandchild
+      // holding the pipes must not stall the run forever after exit.
+      child.on("exit", (code) => {
+        setTimeout(() => settle({ stdout, stderr, exitCode: code, timedOut }), 2000).unref();
       });
     });
   }

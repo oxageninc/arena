@@ -41,6 +41,7 @@ jobs:
           python-version: "3.12"  # Harbor requires >= 3.12
           cache: pip
       - run: pip install -e '.[dev]'
+      - run: ruff check .
       # Spec/metrics/command logic is Harbor-free; the agent tests exercise the
       # real Harbor BaseInstalledAgent subclasses (Harbor is a declared dep).
       - run: pytest -q

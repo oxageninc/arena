@@ -12,13 +12,13 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from typing import Any
 
 from .spec import MetricsSpec
 
 
-@dataclass
+@dataclass(frozen=True)
 class ParsedMetrics:
     input_tokens: int | None = None
     output_tokens: int | None = None
@@ -28,30 +28,14 @@ class ParsedMetrics:
 
     def as_metadata(self, agent_name: str) -> dict[str, Any]:
         prefix = f"arena_{agent_name.replace('-', '_')}"
-        out: dict[str, Any] = {}
-        for field_name in (
-            "input_tokens",
-            "output_tokens",
-            "cache_read_tokens",
-            "total_tokens",
-            "cost_usd",
-        ):
-            value = getattr(self, field_name)
-            if value is not None:
-                out[f"{prefix}_{field_name}"] = value
-        return out
+        return {
+            f"{prefix}_{f.name}": getattr(self, f.name)
+            for f in fields(self)
+            if getattr(self, f.name) is not None
+        }
 
     def is_empty(self) -> bool:
-        return all(
-            getattr(self, f) is None
-            for f in (
-                "input_tokens",
-                "output_tokens",
-                "cache_read_tokens",
-                "total_tokens",
-                "cost_usd",
-            )
-        )
+        return all(getattr(self, f.name) is None for f in fields(self))
 
 
 def last_json_object(text: str) -> dict[str, Any] | None:

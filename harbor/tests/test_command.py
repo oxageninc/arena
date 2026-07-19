@@ -16,7 +16,10 @@ def _spec(run_template, **kw):
 
 
 def test_render_template_replaces_known_leaves_unknown():
-    out = render_template("{bin} run {instruction} ${HOME} awk '{print $1}'", {"bin": "x", "instruction": "'go'"})
+    out = render_template(
+        "{bin} run {instruction} ${HOME} awk '{print $1}'",
+        {"bin": "x", "instruction": "'go'"},
+    )
     assert out == "x run 'go' ${HOME} awk '{print $1}'"
 
 
@@ -71,4 +74,4 @@ def test_builtin_run_templates_render():
     assert oxa.strip().endswith("'do it'")
 
     stella = build_command(STELLA_SPEC, "zai/glm-5.2", "do it", budget="5")
-    assert "stella --model zai/glm-5.2 --output-format json --budget 5 run 'do it'" == stella
+    assert stella == "stella --model zai/glm-5.2 --output-format json --budget 5 run 'do it'"

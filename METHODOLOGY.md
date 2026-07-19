@@ -10,7 +10,7 @@ One run executes N agents × T tasks × K trials. Every trial:
 2. **Agent** — the agent CLI runs headlessly in that directory with the shared model/budget/timeout. Arguments are passed as argv arrays (no shell).
 3. **Diff** — `git diff` against the seed commit captures exactly what the agent changed.
 4. **Verify** — the harness deletes anything at `.arena-verify/`, copies the task's held-out `verify/` tests in, and runs them with `node --test`. The tests were never on disk while the agent ran.
-5. **Score** — `passed` iff the held-out tests pass. `timeout` if the agent hit the wall-clock cap. `agent-error` if the CLI could not be invoked at all (spawn failure, or non-zero exit with zero diff and zero tokens) — these are harness-side failures, excluded from every comparison and listed separately.
+5. **Score** — `timeout` if the agent hit the wall-clock cap (takes precedence: exceeding the matched budget never scores as a win, even if the tests pass on whatever state the kill left behind). Otherwise `passed` iff the held-out tests pass. `agent-error` if the CLI could not be invoked at all (spawn failure, or non-zero exit with zero diff and zero tokens) — these are harness-side failures, excluded from every comparison and listed separately.
 
 ## Fairness controls
 

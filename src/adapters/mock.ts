@@ -18,9 +18,6 @@ export class MockAdapter extends Adapter {
   readonly name = "mock";
   protected readonly defaultBinary = "mock";
 
-  /** The orchestrator records the active task dir here before each execute. */
-  static currentTaskDir: string | null = null;
-
   override isAvailable(): boolean {
     return true;
   }
@@ -34,11 +31,9 @@ export class MockAdapter extends Adapter {
   }
 
   override execute(args: AdapterRunArgs): Promise<ExecOutcome> {
-    const behavior = args.model;
-    if (behavior === "solve") {
-      const taskDir = MockAdapter.currentTaskDir;
-      const solution = taskDir ? join(taskDir, "solution") : null;
-      if (solution && existsSync(solution)) {
+    if (args.model === "solve") {
+      const solution = join(args.taskDir, "solution");
+      if (existsSync(solution)) {
         cpSync(solution, args.workDir, { recursive: true });
       }
     }

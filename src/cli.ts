@@ -55,7 +55,7 @@ switch (command) {
     cmdReport(rest);
     break;
   case "verify":
-    cmdVerify(rest);
+    await cmdVerify(rest);
     break;
   case "baseline":
     cmdBaseline(rest);
@@ -169,13 +169,14 @@ async function cmdRun(argv: string[]): Promise<void> {
     }
   }
 
+  const budgetUsd = values.budget !== undefined ? numFlag("budget", values.budget) : undefined;
   const config = {
     agents,
     tasks,
-    trials: values.trials ? parseInt(values.trials, 10) : 3,
-    ...(values.budget !== undefined ? { budgetUsd: parseFloat(values.budget) } : {}),
-    timeoutSeconds: values.timeout ? parseInt(values.timeout, 10) : 600,
-    seed: values.seed ? parseInt(values.seed, 10) : 42,
+    trials: intFlag("trials", values.trials, 3),
+    ...(budgetUsd !== undefined ? { budgetUsd } : {}),
+    timeoutSeconds: intFlag("timeout", values.timeout, 600),
+    seed: intFlag("seed", values.seed, 42, 0),
     outDir: resolve(values.out ?? "results"),
   };
 
@@ -183,6 +184,27 @@ async function cmdRun(argv: string[]): Promise<void> {
   const report = generateReport(runDir);
   writeFileSync(join(runDir, "report.md"), report);
   console.log(`\nRun complete. Report: ${join(runDir, "report.md")}`);
+}
+
+/** Parse an integer CLI flag; reject garbage instead of silently running with NaN. */
+function intFlag(name: string, raw: string | undefined, fallback: number, min = 1): number {
+  if (raw === undefined) return fallback;
+  const n = Number.parseInt(raw, 10);
+  if (!Number.isFinite(n) || n < min || String(n) !== raw.trim()) {
+    console.error(`--${name} must be an integer ≥ ${String(min)}, got "${raw}"`);
+    process.exit(1);
+  }
+  return n;
+}
+
+/** Parse a positive numeric CLI flag. */
+function numFlag(name: string, raw: string): number {
+  const n = Number.parseFloat(raw);
+  if (!Number.isFinite(n) || n <= 0) {
+    console.error(`--${name} must be a positive number, got "${raw}"`);
+    process.exit(1);
+  }
+  return n;
 }
 
 function cmdReport(argv: string[]): void {
@@ -201,7 +223,7 @@ function cmdReport(argv: string[]): void {
  * workspace (no tautological tests) and PASS against the reference solution
  * (the task is actually solvable). CI runs this on every push.
  */
-function cmdVerify(argv: string[]): void {
+async function cmdVerify(argv: string[]): Promise<void> {
   const all = loadTasks(TASK_ROOT);
   const tasks = argv.length > 0 ? all.filter((t) => argv.includes(t.id)) : all;
   let failures = 0;
@@ -210,12 +232,12 @@ function cmdVerify(argv: string[]): void {
     const pristineDir = mkdtempSync(join(tmpdir(), "arena-audit-"));
     const solvedDir = mkdtempSync(join(tmpdir(), "arena-audit-"));
     try {
-      seedWorkspace(task, pristineDir);
-      const pristine = runVerification(task, pristineDir);
+      await seedWorkspace(task, pristineDir);
+      const pristine = await runVerification(task, pristineDir);
 
-      seedWorkspace(task, solvedDir);
-      applySolution(task, solvedDir);
-      const solved = runVerification(task, solvedDir);
+      await seedWorkspace(task, solvedDir);
+      await applySolution(task, solvedDir);
+      const solved = await runVerification(task, solvedDir);
 
       const ok = !pristine.passed && solved.passed;
       if (!ok) failures++;

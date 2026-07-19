@@ -44,6 +44,9 @@ _SYSTEM_PKG_TEMPLATE = (
 class ArenaInstalledAgent(BaseInstalledAgent):
     """Base for Arena's Harbor agents. Subclasses set ``name()`` and ``spec()``."""
 
+    #: Combined stdout/stderr of the last agent run (metrics are read from it).
+    _agent_output: str = ""
+
     def spec(self) -> AgentSpec:
         raise NotImplementedError("subclasses must implement spec()")
 
@@ -139,7 +142,7 @@ class ArenaInstalledAgent(BaseInstalledAgent):
             result = await environment.exec(
                 command=command,
                 env=env,
-                timeout_sec=int(timeout) if timeout.isdigit() else None,
+                timeout_sec=_parse_timeout(timeout),
             )
             self._agent_output = "\n".join(
                 part
@@ -149,7 +152,7 @@ class ArenaInstalledAgent(BaseInstalledAgent):
                 )
                 if part
             )
-        except Exception as exc:  # noqa: BLE001 - never let agent failure kill scoring
+        except Exception as exc:
             self._agent_output = f"[arena-harbor] agent execution error: {exc}"
             self.logger.warning("arena-harbor: agent run raised: %s", exc)
 
@@ -158,7 +161,7 @@ class ArenaInstalledAgent(BaseInstalledAgent):
         spec = self.spec()
         if spec.metrics is None:
             return
-        output = getattr(self, "_agent_output", "")
+        output = self._agent_output
         if not output:
             return
         parsed = extract_metrics(output, spec.metrics)
@@ -167,3 +170,11 @@ class ArenaInstalledAgent(BaseInstalledAgent):
         if parsed.cost_usd is not None:
             context.cost_usd = parsed.cost_usd
         context.metadata = {**(context.metadata or {}), **parsed.as_metadata(spec.name)}
+
+
+def _parse_timeout(raw: str) -> int | None:
+    """``ARENA_TIMEOUT`` seconds as an int; None (no limit) when unparseable."""
+    try:
+        return int(float(raw))
+    except ValueError:
+        return None
